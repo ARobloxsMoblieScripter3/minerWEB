@@ -7,58 +7,55 @@
     <style>
         body { font-family: Arial, sans-serif; }
         .container { max-width: 600px; margin: 50px auto; text-align: center; }
-        input[type="file"] { margin-bottom: 20px; }
+        textarea { width: 100%; height: 200px; margin-bottom: 20px; }
+        button { padding: 10px 20px; }
         pre { text-align: left; background: #f0f0f0; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Builder File Loader</h1>
-        <input type="file" id="fileInput" accept=".builder">
+        <textarea id="codeInput" placeholder="Paste your .builder code here..."></textarea>
+        <button onclick="runCode()">Run Code</button>
         <pre id="output"></pre>
     </div>
 
     <script>
-        // Event listener for file input change
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            const file = event.target.files[0]; // Get the selected file
-            if (file) {
-                const reader = new FileReader(); // Create a FileReader to read the file
-                reader.onload = function(e) {
-                    const content = e.target.result; // Get the file content
-                    const output = document.getElementById('output'); // Get the output element
-                    output.textContent = interpret(content); // Interpret and display the content
-                };
-                reader.readAsText(file); // Read the file as text
-            }
-        });
+        function runCode() {
+            const code = document.getElementById('codeInput').value;
+            const output = document.getElementById('output');
+            output.textContent = interpret(code);
+        }
 
-        // Simple interpreter function
         function interpret(code) {
-            const lines = code.split('\n'); // Split the code into lines
-            const variables = {}; // Object to store variables
-            let output = ''; // String to store output
+            const lines = code.split('\n');
+            const variables = {};
+            let output = '';
 
-            // Helper function to simulate print statement
             function print(value) {
                 output += value + '\n';
             }
 
-            // Process each line of code
+            function evalExpression(expression) {
+                try {
+                    return new Function('variables', 'with(variables) { return ' + expression + '; }')(variables);
+                } catch (e) {
+                    return undefined;
+                }
+            }
+
             lines.forEach(line => {
-                const trimmedLine = line.trim(); // Trim whitespace from the line
+                const trimmedLine = line.trim();
                 if (trimmedLine.startsWith('var')) {
-                    // Handle variable declarations
                     const [_, varName, varValue] = trimmedLine.match(/var\s+(\w+)\s*=\s*(.+)/);
-                    variables[varName] = eval(varValue);
+                    variables[varName] = evalExpression(varValue);
                 } else if (trimmedLine.startsWith('print')) {
-                    // Handle print statements
                     const value = trimmedLine.match(/print\((.+)\)/)[1];
-                    print(eval(value));
+                    print(evalExpression(value));
                 }
             });
 
-            return output; // Return the output
+            return output;
         }
     </script>
 </body>
