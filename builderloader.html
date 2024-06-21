@@ -8,7 +8,7 @@
         body { font-family: Arial, sans-serif; }
         .container { max-width: 600px; margin: 50px auto; text-align: center; }
         input[type="file"] { margin-bottom: 20px; }
-        pre { text-align: left; }
+        pre { text-align: left; background: #f0f0f0; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -19,40 +19,46 @@
     </div>
 
     <script>
+        // Event listener for file input change
         document.getElementById('fileInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
+            const file = event.target.files[0]; // Get the selected file
             if (file) {
-                const reader = new FileReader();
+                const reader = new FileReader(); // Create a FileReader to read the file
                 reader.onload = function(e) {
-                    const content = e.target.result;
-                    const output = document.getElementById('output');
-                    output.textContent = interpret(content);
+                    const content = e.target.result; // Get the file content
+                    const output = document.getElementById('output'); // Get the output element
+                    output.textContent = interpret(content); // Interpret and display the content
                 };
-                reader.readAsText(file);
+                reader.readAsText(file); // Read the file as text
             }
         });
 
+        // Simple interpreter function
         function interpret(code) {
-            const lines = code.split('\n');
-            const variables = {};
-            let output = '';
+            const lines = code.split('\n'); // Split the code into lines
+            const variables = {}; // Object to store variables
+            let output = ''; // String to store output
 
+            // Helper function to simulate print statement
             function print(value) {
                 output += value + '\n';
             }
 
+            // Process each line of code
             lines.forEach(line => {
-                const trimmedLine = line.trim();
+                const trimmedLine = line.trim(); // Trim whitespace from the line
                 if (trimmedLine.startsWith('var')) {
+                    // Handle variable declarations
                     const [_, varName, varValue] = trimmedLine.match(/var\s+(\w+)\s*=\s*(.+)/);
                     variables[varName] = eval(varValue);
                 } else if (trimmedLine.startsWith('print')) {
+                    // Handle print statements
                     const value = trimmedLine.match(/print\((.+)\)/)[1];
                     print(eval(value));
                 }
             });
 
-            return output;
+            return output; // Return the output
         }
     </script>
 </body>
